@@ -9,6 +9,8 @@ A full-stack blog editor application with an auto-save draft feature built with 
 - Auto-save drafts after 5 seconds of inactivity
 - Tag management
 - Separate views for drafts and published posts
+- Preview mode to see how posts will look when published
+- Delete functionality for removing unwanted posts
 
 ## Tech Stack
 
@@ -33,6 +35,7 @@ A full-stack blog editor application with an auto-save draft feature built with 
 | GET    | /api/blogs/:id    | Retrieve a blog by ID        |
 | POST   | /api/blogs/save-draft | Save or update a draft    |
 | POST   | /api/blogs/publish    | Save and publish an article |
+| DELETE | /api/blogs/:id    | Delete a blog by ID          |
 
 ## Project Setup
 

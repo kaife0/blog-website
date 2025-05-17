@@ -3,8 +3,8 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import connectDB from './config/db';
-import blogRoutes from './routes/blogRoutes';
+import connectDB from './config/db.js';
+import blogRoutes from './routes/blogRoutes.js';
 
 // Load environment variables
 dotenv.config();

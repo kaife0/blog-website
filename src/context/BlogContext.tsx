@@ -1,21 +1,22 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { BlogType } from '../types/blog';
-import { api } from '../services/api';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { api, type BlogTypeAPI } from '../services/api';
 
 type BlogContextType = {
-  blogs: BlogType[];
+  blogs: BlogTypeAPI[];
   loading: boolean;
   error: string | null;
   fetchBlogs: () => Promise<void>;
-  fetchBlog: (id: string) => Promise<BlogType | null>;
-  saveDraft: (blog: Partial<BlogType>) => Promise<BlogType | null>;
-  publishBlog: (blog: Partial<BlogType>) => Promise<BlogType | null>;
+  fetchBlog: (id: string) => Promise<BlogTypeAPI | null>;
+  saveDraft: (blog: Partial<BlogTypeAPI>) => Promise<BlogTypeAPI | null>;
+  publishBlog: (blog: Partial<BlogTypeAPI>) => Promise<BlogTypeAPI | null>;
+  deleteBlog: (id: string) => Promise<boolean>;
 };
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
 export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [blogs, setBlogs] = useState<BlogType[]>([]);
+  const [blogs, setBlogs] = useState<BlogTypeAPI[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +34,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const fetchBlog = async (id: string): Promise<BlogType | null> => {
+  const fetchBlog = async (id: string): Promise<BlogTypeAPI | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -48,7 +49,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const saveDraft = async (blog: Partial<BlogType>): Promise<BlogType | null> => {
+  const saveDraft = async (blog: Partial<BlogTypeAPI>): Promise<BlogTypeAPI | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -74,8 +75,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
     }
   };
-
-  const publishBlog = async (blog: Partial<BlogType>): Promise<BlogType | null> => {
+  const publishBlog = async (blog: Partial<BlogTypeAPI>): Promise<BlogTypeAPI | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -101,12 +101,30 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
     }
   };
+  
+  const deleteBlog = async (id: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.deleteBlog(id);
+      
+      // Remove the blog from the state
+      setBlogs(prev => prev.filter(blog => blog._id !== id));
+      
+      return true;
+    } catch (err) {
+      setError('Failed to delete blog');
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch blogs on initial load
   useEffect(() => {
     fetchBlogs();
   }, []);
-
   return (
     <BlogContext.Provider
       value={{
@@ -117,6 +135,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         fetchBlog,
         saveDraft,
         publishBlog,
+        deleteBlog,
       }}
     >
       {children}

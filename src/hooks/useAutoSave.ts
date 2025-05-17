@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { BlogType } from '../types/blog';
+import type { BlogType } from '../types/blog';
 import { api } from '../services/api';
 
 type AutoSaveProps = {

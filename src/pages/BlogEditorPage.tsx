@@ -6,12 +6,11 @@ import RichTextEditor from '../components/RichTextEditor';
 import SaveStatus from '../components/SaveStatus';
 import { useBlogContext } from '../context/BlogContext';
 import { useAutoSave } from '../hooks/useAutoSave';
-import { BlogType } from '../types/blog';
+import type { BlogType } from '../types/blog';
 
 const BlogEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { fetchBlog, saveDraft, publishBlog } = useBlogContext();
+  const navigate = useNavigate();  const { fetchBlog, publishBlog } = useBlogContext();
   
   // Blog state
   const [blog, setBlog] = useState<Partial<BlogType>>({
@@ -24,6 +23,7 @@ const BlogEditorPage: React.FC = () => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
 
   // Fetch blog data if editing an existing blog
   useEffect(() => {
@@ -174,47 +174,69 @@ const BlogEditorPage: React.FC = () => {
             disabled={saving}
           >
             Save as Draft
-          </button>
-          <button 
+          </button>          <button 
             className="publish-btn" 
             onClick={handlePublish}
             disabled={saving}
           >
             Publish
           </button>
+          <button 
+            className="preview-btn" 
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            {showPreview ? 'Edit' : 'Preview'}
+          </button>
         </div>
-      </div>
+      </div>      <div className="editor-form">
+        {showPreview ? (
+          <div className="blog-preview">
+            <h2 className="preview-title">{blog.title || 'Untitled'}</h2>
+            {blog.tags && blog.tags.length > 0 && (
+              <div className="preview-tags">
+                {blog.tags.map((tag, index) => (
+                  <span key={index} className="tag">{tag}</span>
+                ))}
+              </div>
+            )}
+            <div 
+              className="preview-content"
+              dangerouslySetInnerHTML={{ __html: blog.content || '' }}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="form-group">
+              <label htmlFor="title">Title</label>
+              <input
+                type="text"
+                id="title"
+                placeholder="Enter blog title"
+                value={blog.title || ''}
+                onChange={handleTitleChange}
+              />
+            </div>
 
-      <div className="editor-form">
-        <div className="form-group">
-          <label htmlFor="title">Title</label>
-          <input
-            type="text"
-            id="title"
-            placeholder="Enter blog title"
-            value={blog.title || ''}
-            onChange={handleTitleChange}
-          />
-        </div>
+            <div className="form-group">
+              <label htmlFor="content">Content</label>
+              <RichTextEditor 
+                value={blog.content || ''} 
+                onChange={handleContentChange} 
+              />
+            </div>
 
-        <div className="form-group">
-          <label htmlFor="content">Content</label>
-          <RichTextEditor 
-            value={blog.content || ''} 
-            onChange={handleContentChange} 
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="tags">Tags (comma separated)</label>
-          <input
-            type="text"
-            id="tags"
-            placeholder="e.g., technology, programming, react"
-            value={blog.tags?.join(', ') || ''}
-            onChange={handleTagsChange}
-          />
-        </div>
+            <div className="form-group">
+              <label htmlFor="tags">Tags (comma separated)</label>
+              <input
+                type="text"
+                id="tags"
+                placeholder="e.g., technology, programming, react"
+                value={blog.tags?.join(', ') || ''}
+                onChange={handleTagsChange}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <ToastContainer position="bottom-right" />
