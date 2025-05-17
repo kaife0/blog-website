@@ -1,24 +1,139 @@
-# React + TypeScript + Vite
+# Blog Editor Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack blog editor application with an auto-save draft feature built with React, Node.js, Express, and MongoDB.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Create, edit, and publish blog posts
+- Rich text editor for content
+- Auto-save drafts after 5 seconds of inactivity
+- Tag management
+- Separate views for drafts and published posts
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Frontend
+- React with TypeScript
+- React Router for navigation
+- React Quill for rich text editing
+- React Toastify for notifications
+- Axios for API requests
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
+### Backend
+- Node.js with Express
+- TypeScript
+- MongoDB with Mongoose
+- RESTful API architecture
+
+## API Endpoints
+
+| Method | Endpoint           | Description                  |
+|--------|-------------------|------------------------------|
+| GET    | /api/blogs        | Retrieve all blogs           |
+| GET    | /api/blogs/:id    | Retrieve a blog by ID        |
+| POST   | /api/blogs/save-draft | Save or update a draft    |
+| POST   | /api/blogs/publish    | Save and publish an article |
+
+## Project Setup
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (local or Atlas)
+
+### MongoDB Atlas Setup
+
+1. Create a free account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
+2. Create a new project
+3. Build a cluster (choose the free tier)
+4. Configure network access to allow connections from anywhere (for development)
+5. Create a database user
+6. Get your connection string from Atlas (click on "Connect" -> "Connect your application")
+7. Update the `.env` file with your connection string:
+
+```
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/blog-app?retryWrites=true&w=majority
+```
+
+### Local Development Setup
+
+1. Clone this repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Create a `.env` file in the root directory with the following variables:
+   ```
+   PORT=5000
+   MONGO_URI=mongodb://localhost:27017/blog-app
+   ```
+   (Replace with your MongoDB Atlas URI if using Atlas)
+
+4. Start the development server:
+   ```
+   npm run start
+   ```
+   This will start both the frontend dev server and the backend API server concurrently.
+
+## Production Deployment
+
+1. Build the frontend:
+   ```
+   npm run build
+   ```
+
+2. The build artifacts will be stored in the `dist/` directory
+
+3. Deploy the backend to your preferred hosting service (Heroku, Render, etc.)
+
+4. Make sure to set the environment variables on your hosting service
+
+## Testing the API
+
+You can test the API endpoints using tools like:
+- [Postman](https://www.postman.com/)
+- [Insomnia](https://insomnia.rest/)
+- [curl](https://curl.se/) command line tool
+
+### Example API Requests
+
+#### Get all blogs
+```
+GET http://localhost:5000/api/blogs
+```
+
+#### Get a blog by ID
+```
+GET http://localhost:5000/api/blogs/60d21b4667d0d8992e610c85
+```
+
+#### Save a draft
+```
+POST http://localhost:5000/api/blogs/save-draft
+Content-Type: application/json
+
+{
+  "title": "My New Blog",
+  "content": "<p>This is my blog content.</p>",
+  "tags": "tag1, tag2"
+}
+```
+
+#### Publish a blog
+```
+POST http://localhost:5000/api/blogs/publish
+Content-Type: application/json
+
+{
+  "title": "My Published Blog",
+  "content": "<p>This is my published blog content.</p>",
+  "tags": "tag1, tag2"
+}
+```
+
+## License
+
+MIT
     ...tseslint.configs.stylisticTypeChecked,
   ],
   languageOptions: {
