@@ -34,6 +34,20 @@ export const saveDraft = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id, title, content, tags } = req.body;
     
+    // Process tags - ensure it's always an array
+    const processedTags = Array.isArray(tags) 
+      ? tags 
+      : typeof tags === 'string' 
+        ? tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+        : [];
+    
+    console.log(`${id ? 'Updating' : 'Creating'} blog draft:`, { 
+      id, 
+      title: title?.substring(0, 30) + '...',
+      contentLength: content?.length || 0,
+      tags: processedTags 
+    });
+
     // If id exists, update the blog, otherwise create a new one
     if (id) {
       const blog = await Blog.findByIdAndUpdate(
@@ -41,27 +55,29 @@ export const saveDraft = async (req: Request, res: Response): Promise<void> => {
         { 
           title, 
           content, 
-          tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+          tags: processedTags,
           status: 'draft' 
         },
         { new: true }
       );
       
       if (!blog) {
+        console.log(`Blog with ID ${id} not found for update`);
         res.status(404).json({ message: 'Blog not found' });
         return;
       }
       
+      console.log(`Successfully updated blog: ${id}`);
       res.status(200).json(blog);
-    } else {
-      const newBlog = new Blog({
+    } else {      const newBlog = new Blog({
         title,
         content,
-        tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+        tags: processedTags,
         status: 'draft'
       });
       
       const savedBlog = await newBlog.save();
+      console.log(`Created new blog with ID: ${savedBlog._id}`);
       res.status(201).json(savedBlog);
     }
   } catch (error) {
@@ -75,6 +91,13 @@ export const publishBlog = async (req: Request, res: Response): Promise<void> =>
   try {
     const { id, title, content, tags } = req.body;
     
+    // Process tags - ensure it's always an array
+    const processedTags = Array.isArray(tags) 
+      ? tags 
+      : typeof tags === 'string' 
+        ? tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+        : [];
+    
     // If id exists, update the blog, otherwise create a new one
     if (id) {
       const blog = await Blog.findByIdAndUpdate(
@@ -82,13 +105,12 @@ export const publishBlog = async (req: Request, res: Response): Promise<void> =>
         { 
           title, 
           content, 
-          tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+          tags: processedTags,
           status: 'published' 
         },
         { new: true }
       );
-      
-      if (!blog) {
+        if (!blog) {
         res.status(404).json({ message: 'Blog not found' });
         return;
       }
@@ -98,7 +120,7 @@ export const publishBlog = async (req: Request, res: Response): Promise<void> =>
       const newBlog = new Blog({
         title,
         content,
-        tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+        tags: processedTags,
         status: 'published'
       });
       

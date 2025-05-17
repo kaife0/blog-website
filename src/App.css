@@ -39,16 +39,24 @@ button {
   border: none;
   border-radius: 4px;
   font-weight: 500;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 button:not(:disabled):hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .save-draft-btn {
@@ -64,6 +72,8 @@ button:not(:disabled):hover {
 .publish-btn {
   background-color: var(--primary-color);
   color: white;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
 }
 
 .publish-btn:not(:disabled):hover {
@@ -169,6 +179,12 @@ button:not(:disabled):hover {
   font-size: 0.75rem;
 }
 
+.no-tags {
+  font-style: italic;
+  color: var(--medium-gray);
+  font-size: 0.75rem;
+}
+
 .blog-actions {
   display: flex;
   justify-content: space-between;
@@ -219,10 +235,35 @@ button:not(:disabled):hover {
   border-bottom: 1px solid var(--light-gray);
 }
 
-.editor-actions {
+.header-left {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.back-btn {
+  background-color: transparent;
+  color: var(--primary-color);
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.back-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateX(-3px);
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .editor-form {
@@ -250,16 +291,45 @@ button:not(:disabled):hover {
 
 /* SaveStatus component styles */
 .save-status {
-  color: var(--medium-gray);
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
   font-size: 0.85rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.save-icon {
+  margin-right: 0.35rem;
+  display: inline-block;
 }
 
 .saving {
   color: var(--warning-color);
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.saving-text .save-icon {
+  animation: spin 1.5s linear infinite;
 }
 
 .saved {
   color: var(--success-color);
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.no-save {
+  color: var(--medium-gray);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rich-text-editor-container {
+  margin-bottom: 50px;
 }
 
 /* Quill editor overrides */
@@ -276,14 +346,46 @@ button:not(:disabled):hover {
 }
 
 /* Loading and error states */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  min-height: 300px;
+}
+
 .loading, .error {
   text-align: center;
-  padding: 2rem;
   font-size: 1.1rem;
+  margin-bottom: 1.5rem;
 }
 
 .error {
   color: var(--danger-color);
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid var(--primary-color);
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.retry-btn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1.5rem;
 }
 
 /* Toast customization */
@@ -297,6 +399,32 @@ button:not(:disabled):hover {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .app-container {
+    padding: 1rem;
+  }
+  
+  .editor-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .editor-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .blog-editor-page {
+    padding: 0 1rem;
+  }
 }
 
 .preview-title {

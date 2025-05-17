@@ -9,6 +9,7 @@ type BlogContextType = {
   fetchBlogs: () => Promise<void>;
   fetchBlog: (id: string) => Promise<BlogTypeAPI | null>;
   saveDraft: (blog: Partial<BlogTypeAPI>) => Promise<BlogTypeAPI | null>;
+  updateBlog: (blog: Partial<BlogTypeAPI>) => Promise<BlogTypeAPI | null>;
   publishBlog: (blog: Partial<BlogTypeAPI>) => Promise<BlogTypeAPI | null>;
   deleteBlog: (id: string) => Promise<boolean>;
 };
@@ -32,43 +33,112 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchBlog = async (id: string): Promise<BlogTypeAPI | null> => {
+  };  const fetchBlog = async (id: string): Promise<BlogTypeAPI | null> => {
     setLoading(true);
     setError(null);
-    try {
-      const blog = await api.getBlogById(id);
-      return blog;
-    } catch (err) {
-      setError('Failed to fetch blog');
-      console.error(err);
-      return null;
-    } finally {
-      setLoading(false);
+    
+    let retryCount = 0;
+    const maxRetries = 2;
+    
+    while (retryCount <= maxRetries) {
+      try {
+        console.log(`Fetching blog with ID: ${id} (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+        const blog = await api.getBlogById(id);
+        console.log("Fetched blog from API:", blog);
+        return blog;
+      } catch (err: any) {
+        console.error("Error fetching blog:", err);
+        
+        // If this is a timeout or network error, retry
+        if (err.code === 'ECONNABORTED' || !err.response) {
+          retryCount++;
+          
+          if (retryCount <= maxRetries) {
+            console.log(`Retrying in ${retryCount * 1000}ms...`);
+            // Wait a bit before retrying (progressive backoff)
+            await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
+            continue;
+          }
+          
+          // After max retries, try to get from localStorage
+          try {
+            const cachedBlog = localStorage.getItem(`blog_${id}`);
+            if (cachedBlog) {
+              console.log("Using cached blog data from localStorage");
+              setLoading(false);
+              return JSON.parse(cachedBlog);
+            }
+          } catch (storageError) {
+            console.error("Error accessing localStorage:", storageError);
+          }
+        }
+        
+        setError('Failed to fetch blog');
+        setLoading(false);
+        return null;
+      }
     }
+    
+    setLoading(false);
+    return null;
   };
-
   const saveDraft = async (blog: Partial<BlogTypeAPI>): Promise<BlogTypeAPI | null> => {
     setLoading(true);
     setError(null);
     try {
       const savedBlog = await api.saveDraft(blog);
       
-      // Update the blogs state if the blog exists in it
+      // Update the blogs state
       setBlogs(prev => {
-        const index = prev.findIndex(b => b._id === savedBlog._id);
-        if (index !== -1) {
+        // Check if the blog already exists in the list
+        const existingBlogIndex = prev.findIndex(b => b._id === savedBlog._id);
+        
+        if (existingBlogIndex !== -1) {
+          // Update existing blog
           const updatedBlogs = [...prev];
-          updatedBlogs[index] = savedBlog;
+          updatedBlogs[existingBlogIndex] = savedBlog;
           return updatedBlogs;
+        } else {
+          // Add new blog if it's not in the list yet
+          return [...prev, savedBlog];
         }
-        return [...prev, savedBlog];
       });
       
       return savedBlog;
     } catch (err) {
       setError('Failed to save draft');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const updateBlog = async (blog: Partial<BlogTypeAPI>): Promise<BlogTypeAPI | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Ensure we have an ID
+      if (!blog._id) {
+        throw new Error('Blog ID is required for updates');
+      }
+      
+      console.log(`Updating blog with ID: ${blog._id}`);
+      const updatedBlog = await api.updateBlog(blog);
+      
+      // Update the blogs state
+      setBlogs(prev => {
+        const index = prev.findIndex(b => b._id === updatedBlog._id);
+        if (index !== -1) {
+          const updatedBlogs = [...prev];
+          updatedBlogs[index] = updatedBlog;
+          return updatedBlogs;
+        }
+        return prev;
+      });
+      
+      return updatedBlog;
+    } catch (err) {
+      setError('Failed to update blog');
       console.error(err);
       return null;
     } finally {
@@ -134,6 +204,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         fetchBlogs,
         fetchBlog,
         saveDraft,
+        updateBlog,
         publishBlog,
         deleteBlog,
       }}

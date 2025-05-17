@@ -1,0 +1,1 @@
+{"root":["./server/server.ts","./server/config/db.ts","./server/controllers/blogcontroller.ts","./server/models/blog.ts","./server/routes/blogroutes.ts"],"version":"5.8.3"}

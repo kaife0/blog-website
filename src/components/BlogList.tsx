@@ -40,13 +40,17 @@ const BlogList: React.FC<BlogListProps> = ({
               <h3>{blog.title || 'Untitled'}</h3>
               <p className="blog-meta">
                 Last updated: {new Date(blog.updatedAt).toLocaleDateString()}
-              </p>
-              <div className="blog-tags">
-                {blog.tags.map((tag: string, index: number) => (
-                  <span key={index} className="tag">
-                    {tag}
-                  </span>
-                ))}              </div>
+              </p>              <div className="blog-tags">
+                {blog.tags && blog.tags.length > 0 ? (
+                  blog.tags.map((tag: string, index: number) => (
+                    <span key={index} className="tag">
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="no-tags">No tags</span>
+                )}
+              </div>
               <div className="blog-actions">
                 <Link to={`/edit/${blog._id}`} className="edit-link">
                   Edit
