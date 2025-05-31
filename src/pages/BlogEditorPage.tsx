@@ -8,7 +8,8 @@ import { useBlogContext } from '../context/BlogContext';
 import { useAutoSave } from '../hooks/useAutoSave';
 import type { BlogType } from '../types/blog';
 
-const BlogEditorPage: React.FC = () => {  const { id } = useParams<{ id: string }>();
+const BlogEditorPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchBlog, publishBlog, updateBlog } = useBlogContext();
   
@@ -147,14 +148,16 @@ const BlogEditorPage: React.FC = () => {  const { id } = useParams<{ id: string 
     
     console.error("Save error details:", error);
   }, []);
-
-  // Set up auto-save
-  const { autoSave, saveDraft: triggerSave } = useAutoSave({
+  // Set up auto-save with proper typing
+  const { autoSave, saveDraft: triggerSave }: { 
+    autoSave: () => void;
+    saveDraft: (force?: boolean) => Promise<BlogType | null>;
+  } = useAutoSave({
     blog,
     onSaveSuccess: handleSaveSuccess,
     onSaveError: handleSaveError,
     delay: 5000, // 5 seconds
-  });  // Trigger auto-save when blog changes
+  });// Trigger auto-save when blog changes
   useEffect(() => {
     // Only auto-save if:
     // 1. We have a title or content
@@ -181,25 +184,19 @@ const BlogEditorPage: React.FC = () => {  const { id } = useParams<{ id: string 
     }
 
     setSaving(true);
-    console.log("Manual save triggered for blog:", blog);
     try {
-      if (blog._id) {
-        // Use the dedicated update method for existing blogs
-        const result = await updateBlog(blog);
-        if (result) {
-          toast.success('Blog updated successfully');
-          setLastSaved(new Date());
-        } else {
-          toast.error('Failed to update blog');
-        }
+      // Force save regardless of auto-save state
+      const result = await triggerSave(true);
+      
+      if (result) {
+        toast.success('Blog saved successfully');
+        setLastSaved(new Date());
       } else {
-        // Use auto-save logic for new blogs
-        await triggerSave(true); // Force save
+        toast.error('Failed to save blog');
       }
     } catch (error) {
       console.error("Error during manual save:", error);
       toast.error('Failed to save blog');
-      // Error is handled by the useAutoSave hook
     } finally {
       setSaving(false);
     }
@@ -278,35 +275,23 @@ const BlogEditorPage: React.FC = () => {  const { id } = useParams<{ id: string 
   }
 
   return (
-    <div className="blog-editor-page">      <div className="editor-header">
-        <div className="header-left">          <button 
-            className="back-btn" 
-            onClick={handleBackClick}
-          >
+    <div className="blog-editor-page">
+      <div className="editor-header">
+        <div className="header-left">
+          <button className="back-btn" onClick={handleBackClick}>
             ← Back to Home
           </button>
           <h1>{id === 'new' ? 'Create New Blog' : 'Edit Blog'}</h1>
         </div>
         <div className="editor-actions">
           <SaveStatus lastSaved={lastSaved} saving={saving} />
-          <button 
-            className="save-draft-btn" 
-            onClick={handleSaveDraft}
-            disabled={saving}
-          >
+          <button className="save-draft-btn" onClick={handleSaveDraft}>
             Save as Draft
           </button>
-          <button 
-            className="publish-btn" 
-            onClick={handlePublish}
-            disabled={saving}
-          >
+          <button className="publish-btn" onClick={handlePublish}>
             Publish
           </button>
-          <button 
-            className="preview-btn" 
-            onClick={() => setShowPreview(!showPreview)}
-          >
+          <button className="preview-btn" onClick={() => setShowPreview(!showPreview)}>
             {showPreview ? 'Edit' : 'Preview'}
           </button>
         </div>
