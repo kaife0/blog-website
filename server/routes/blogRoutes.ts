@@ -1,5 +1,5 @@
 import express from 'express';
-import { getBlogs, getBlogById, saveDraft, publishBlog } from '../controllers/blogController.js';
+import { getBlogs, getBlogById, saveDraft, publishBlog, deleteBlog } from '../controllers/blogController.js';
 
 const router = express.Router();
 
@@ -21,5 +21,8 @@ router.patch('/update/:id', (req, res) => {
 
 // Publish blog
 router.post('/publish', publishBlog);
+
+// Delete blog
+router.delete('/:id', deleteBlog);
 
 export default router;

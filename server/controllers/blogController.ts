@@ -132,3 +132,21 @@ export const publishBlog = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Delete a blog
+export const deleteBlog = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findByIdAndDelete(id);
+    
+    if (!blog) {
+      res.status(404).json({ message: 'Blog not found' });
+      return;
+    }
+    
+    res.status(200).json({ message: 'Blog deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting blog:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
