@@ -11,7 +11,7 @@ import type { BlogType } from '../types/blog';
 const BlogEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchBlog, publishBlog, updateBlog } = useBlogContext();
+  const { fetchBlog, publishBlog } = useBlogContext();
   
   // Blog state
   const [blog, setBlog] = useState<Partial<BlogType>>({
